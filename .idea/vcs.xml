@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="VcsDirectoryMappings">
+    <mapping directory="$PROJECT_DIR$/DiffUtilExample" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/JepPack" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/cloud-vision" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/machine-learning" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/mechatronics" vcs="Git" />
+  </component>
+</project>

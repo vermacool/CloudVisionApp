@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">DemoApplication</string>
+    <string name="action_sync">Sync Places</string>
+</resources>
