@@ -21,6 +21,7 @@ class PreferenceUtils(context: Context) {
    companion object {
        var preference :SharedPreferences? = null
        val PREF_PLACE:String = "place_list_key"
+       val LAUNCH_TIME_KEY ="launch_count"
 
        fun setPlacesPref(places:PlaceModel) {
            var editorData = preference?.edit()
@@ -35,6 +36,16 @@ class PreferenceUtils(context: Context) {
            val tzJSON = preference?.getString(PREF_PLACE, "")
            return gson.fromJson(tzJSON, PlaceModel::class.java)
 
+       }
+
+       fun setLaunchPref(isFirstTime: Boolean){
+            var editorData = preference?.edit()
+            editorData?.putBoolean(LAUNCH_TIME_KEY,isFirstTime)
+            editorData?.apply()
+       }
+
+       fun getLaunchCount():Boolean?{
+           return preference?.getBoolean(LAUNCH_TIME_KEY,true)!!
        }
 
    }
