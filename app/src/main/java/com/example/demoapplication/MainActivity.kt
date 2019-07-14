@@ -21,6 +21,10 @@ import edu.arbelkilani.compass.CompassListener
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.content_main.*
 import mumayank.com.airlocationlibrary.AirLocation
+import com.crashlytics.android.Crashlytics
+import io.fabric.sdk.android.Fabric
+
+
 
 class MainActivity : AppCompatActivity() {
     private var airLocation: AirLocation? = null // ADD THIS LINE ON TOP
@@ -28,6 +32,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        Fabric.with(this, Crashlytics())
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
 
@@ -44,14 +49,7 @@ class MainActivity : AppCompatActivity() {
         })
 
         lifecycle.addObserver(youtube_player_view)
-       /* youtube_player_view.addYouTubePlayerListener(object : AbstractYouTubePlayerListener(){
 
-            override fun onReady(youTubePlayer: YouTubePlayer) {
-                youtube_player_view?.visibility = View.VISIBLE
-                youTubePlayer.loadVideo("SPZJFnym8Q0", 0f)
-
-            }
-        })*/
         button.setOnClickListener {
             airLocation = AirLocation(this, true, true, object : AirLocation.Callbacks {
                 override fun onSuccess(location: Location) {
