@@ -129,7 +129,7 @@ class MainActivity : AppCompatActivity() {
 
                     var distance = currentLocation[0]?.distanceTo(destinationLocation)
                     Log.d("TAG","Distance: "+distance)
-                    if (distance != null && distance.compareTo(30.0) <= 0) {
+                    if (distance != null && distance.compareTo(2000.0) <= 0) {
                        compareResult = destinationPlace
                     }
                 }
