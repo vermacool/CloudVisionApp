@@ -21,13 +21,20 @@ class PreferenceUtils(context: Context) {
    companion object {
        var preference :SharedPreferences? = null
        val PREF_PLACE:String = "place_list_key"
+       val YOUTUBE_KEY:String = "AIzaSyBTN8J1bY1eecYQvZ7-GTU2_aw90ScUBEE"
        val LAUNCH_TIME_KEY ="launch_count"
 
-       fun setPlacesPref(places:PlaceModel) {
+       fun setPlacesPref(places:PlaceModel?) {
            var editorData = preference?.edit()
            val gson = Gson()
            val placeObjJSON = gson.toJson(places)
            editorData?.putString(PREF_PLACE, placeObjJSON)
+           editorData?.apply()
+       }
+
+       fun clearPref() {
+           var editorData = preference?.edit()
+           editorData?.remove(PREF_PLACE)
            editorData?.apply()
        }
 

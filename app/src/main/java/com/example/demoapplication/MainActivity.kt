@@ -11,19 +11,23 @@ import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import android.widget.ImageView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.PlayerConstants
-import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
-import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.AbstractYouTubePlayerListener
-import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView
+import androidx.fragment.app.FragmentManager
 import edu.arbelkilani.compass.CompassListener
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.content_main.*
 import mumayank.com.airlocationlibrary.AirLocation
 import com.crashlytics.android.Crashlytics
+import com.flipkart.youtubeview.YouTubePlayerView
+import com.flipkart.youtubeview.listener.YouTubeEventListener
+import com.flipkart.youtubeview.models.ImageLoader
+import com.flipkart.youtubeview.models.YouTubePlayerType
+import com.google.android.material.bottomsheet.BottomSheetDialog
+import com.squareup.picasso.Picasso
 import io.fabric.sdk.android.Fabric
-
+import java.lang.ref.WeakReference
 
 
 class MainActivity : AppCompatActivity() {
@@ -48,7 +52,7 @@ class MainActivity : AppCompatActivity() {
             }
         })
 
-        lifecycle.addObserver(youtube_player_view)
+       // lifecycle.addObserver(youtube_player_view)
 
         button.setOnClickListener {
             airLocation = AirLocation(this, true, true, object : AirLocation.Callbacks {
@@ -56,7 +60,7 @@ class MainActivity : AppCompatActivity() {
 
                     // location fetched successfully, proceed with it
                     Log.d("TAG", "Coordinates: lat " + location.latitude + " lang " + location.longitude)
-                    CompareLocation(youtube_player_view,this@MainActivity).execute(location)
+                    CompareLocation(this@MainActivity).execute(location)
 
                 }
 
@@ -110,10 +114,10 @@ class MainActivity : AppCompatActivity() {
      * Compare distance if it is under defined radius play video.
      */
 
-    public class CompareLocation constructor(youTubePlayerView: YouTubePlayerView,context: Context) : AsyncTask<Location, Void, PlaceModel.Place>() {
+    public class CompareLocation constructor(activity: MainActivity) : AsyncTask<Location, Void, PlaceModel.Place>() {
         var compareResult: PlaceModel.Place ? = null
-        var mYouTubePlayerView: YouTubePlayerView ? = youTubePlayerView
-        var mContext:Context = context
+        private var mParentActivity: WeakReference<MainActivity>? = WeakReference<MainActivity>(activity)
+
         override fun doInBackground(vararg currentLocation: Location?): PlaceModel.Place? {
             var place: PlaceModel? = PreferenceUtils.getPlaceData()
             var placeList = place?.places
@@ -127,12 +131,14 @@ class MainActivity : AppCompatActivity() {
 
                     var distance = currentLocation[0]?.distanceTo(destinationLocation)
                     Log.d("TAG","Distance: "+distance)
-                    if (distance != null && distance.compareTo(2000.0) <= 0) {
+                    if (distance != null && distance.compareTo(5000.0) <= 0) {
                        compareResult = destinationPlace
+                        break
                     }
+
                 }
             }else{
-                Toast.makeText(mContext,"Please sync location list",Toast.LENGTH_LONG).show()
+                Toast.makeText(mParentActivity?.get()?.applicationContext,"Please sync location list",Toast.LENGTH_LONG).show()
             }
             return compareResult
         }
@@ -140,40 +146,25 @@ class MainActivity : AppCompatActivity() {
 
         override fun onPostExecute(result: PlaceModel.Place?) {
             super.onPostExecute(result)
+            if (mParentActivity?.get() != null && result?.videoUrl!=null) {
 
-            if (result?.videoUrl != null){
-                Log.d("TAG","Location under radius")
-                Toast.makeText(mContext,"Place is matched..!",Toast.LENGTH_SHORT).show()
-                val videoId:String? = result.videoUrl
-                Log.d("TAG",videoId!!)
+                // the WeakReference is still valid and hasn't been reclaimed  by the GC
+                val parentActivity: MainActivity? = mParentActivity!!.get()
 
-                mYouTubePlayerView?.addYouTubePlayerListener(object : AbstractYouTubePlayerListener(){
+                val videoId:String? = result?.videoUrl.toString()
+                var bottomsheetInstance = BottomSheetFragment.getBottomSheetInstance(videoId!!)
+                bottomsheetInstance.show(parentActivity?.supportFragmentManager,"")
+            }else {
+                Toast.makeText(mParentActivity?.get()?.applicationContext,"Couldn't match target.",Toast.LENGTH_LONG).show()
 
-                    override fun onReady(youTubePlayer: YouTubePlayer) {
-                        mYouTubePlayerView?.visibility = View.VISIBLE
-                        youTubePlayer.loadVideo(videoId, 0f)
-                        Log.d("TAG","Video Played with id "+videoId)
-
-                    }
-
-                    override fun onError(youTubePlayer: YouTubePlayer, error: PlayerConstants.PlayerError) {
-                        super.onError(youTubePlayer, error)
-                        Log.d("TAG","error while loading view "+error)
-
-                    }
-
-
-                    override fun onApiChange(youTubePlayer: YouTubePlayer) {
-                        super.onApiChange(youTubePlayer)
-                        Log.d("TAG","api changed "+youTubePlayer)
-
-                    }
-                })
-
-            }else{
-                mYouTubePlayerView?.visibility = View.GONE
             }
+
         }
+    }
+
+
+    override fun onStop() {
+        super.onStop()
     }
 
     override fun onBackPressed() {

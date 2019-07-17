@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:orientation="vertical"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent">
+    <TextView android:id="@+id/tvExit"
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:text="CLOSE"
+              android:layout_gravity="end"
+              android:textColor="@color/black"
+              android:layout_marginRight="@dimen/fab_margin"/>
+
+    <TextView android:id="@+id/tvInstruction"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:text="@string/playInstruction"
+              android:gravity="center_horizontal"
+              android:textSize="16dp"
+              android:layout_marginBottom="4dp"/>
+
+    <com.flipkart.youtubeview.YouTubePlayerView
+            android:id="@+id/youtube_player_view"
+            android:layout_width="match_parent"
+            android:layout_margin="1dp"
+            android:layout_height="wrap_content"
+            android:background="@drawable/ic_thumnail"/>
+
+</LinearLayout>

@@ -49,19 +49,9 @@
             app:layout_constraintStart_toStartOf="parent"
             android:background="@drawable/btn_bg"
             app:layout_constraintTop_toBottomOf="@+id/compass_1"
-            app:layout_constraintBottom_toTopOf="@id/youtube_player_view"
             android:padding="16dp"
             android:textColor="#FFFFFF"
-            android:layout_marginBottom="24dp"/>
-
-    <com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView
-            android:id="@+id/youtube_player_view"
-            android:layout_width="match_parent"
-            android:layout_height="250dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"
-            android:visibility="gone"/>
+           android:layout_marginTop="24dp"/>
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>
