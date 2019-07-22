@@ -137,8 +137,6 @@ class MainActivity : AppCompatActivity() {
                     }
 
                 }
-            }else{
-                Toast.makeText(mParentActivity?.get()?.applicationContext,"Please sync location list",Toast.LENGTH_LONG).show()
             }
             return compareResult
         }
