@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.hardware.Sensor
 import android.hardware.SensorEvent
+import android.icu.util.MeasureUnit.DEGREE
 import android.location.Location
 import android.os.AsyncTask
 import android.os.Bundle
@@ -24,15 +25,20 @@ import com.flipkart.youtubeview.YouTubePlayerView
 import com.flipkart.youtubeview.listener.YouTubeEventListener
 import com.flipkart.youtubeview.models.ImageLoader
 import com.flipkart.youtubeview.models.YouTubePlayerType
+import com.google.android.gms.maps.model.LatLng
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.squareup.picasso.Picasso
 import io.fabric.sdk.android.Fabric
 import java.lang.ref.WeakReference
+import java.text.DecimalFormat
+import kotlin.math.atan2
+import kotlin.math.roundToInt
 
 
 class MainActivity : AppCompatActivity() {
     private var airLocation: AirLocation? = null // ADD THIS LINE ON TOP
     private var TAG:String = MainActivity::class.java.simpleName
+    public var directionPointed:String = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -43,12 +49,14 @@ class MainActivity : AppCompatActivity() {
 
         compass_1.setListener(object : CompassListener{
             override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
-//                Log.d(TAG, "onAccuracyChanged : sensor : " + sensor);
-//                Log.d(TAG, "onAccuracyChanged : accuracy : " + accuracy);
+                Log.d(TAG, "onAccuracyChanged : sensor : " + sensor);
+                Log.d(TAG, "onAccuracyChanged : accuracy : " + accuracy);
             }
 
-            override fun onSensorChanged(event: SensorEvent?) {
-               // Log.d(TAG, "onSensorChanged : " + event)
+            override fun onSensorChanged(event: SensorEvent) {
+                Log.d(TAG, "onSensorChanged : " + event)
+                val degree = Math.round(event.values[0])
+                directionPointed = updateTextDirection(degree.toDouble())
             }
         })
 
@@ -60,7 +68,7 @@ class MainActivity : AppCompatActivity() {
 
                     // location fetched successfully, proceed with it
                     Log.d("TAG", "Coordinates: lat " + location.latitude + " lang " + location.longitude)
-                    CompareLocation(this@MainActivity).execute(location)
+                    CompareLocation(this@MainActivity,directionPointed).execute(location)
 
                 }
 
@@ -76,6 +84,34 @@ class MainActivity : AppCompatActivity() {
 
     }
 
+
+ private fun updateTextDirection(degree:Double):String {
+
+        var deg:Int = 360 - degree.toInt();
+     //("N", "NE", "E", "SE", "S", "SW", "W", "NW", "N")
+        var value:String;
+        if(deg == 0){
+            value = "N"
+        }else if (deg in 1..89) {
+            value = "NE"
+        }else if(deg == 90){
+            value = "E"
+        } else if (deg in 91..179) {
+            value = "SE"
+        }else if(deg == 180){
+            value = "S"
+        }else if (deg in 181..269) {
+            value = "SW"
+        }else if(deg == 270){
+            value = "W"
+        } else if(deg in 271..359) {
+            value = "WN"
+        } else {
+            value = "N"
+        }
+     Log.d("DIRECTION",value)
+     return value
+    }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         airLocation?.onRequestPermissionsResult(
@@ -114,9 +150,10 @@ class MainActivity : AppCompatActivity() {
      * Compare distance if it is under defined radius play video.
      */
 
-    public class CompareLocation constructor(activity: MainActivity) : AsyncTask<Location, Void, PlaceModel.Place>() {
+    public class CompareLocation constructor(activity: MainActivity,pointedDirection:String) : AsyncTask<Location, Void, PlaceModel.Place>() {
         var compareResult: PlaceModel.Place ? = null
         private var mParentActivity: WeakReference<MainActivity>? = WeakReference<MainActivity>(activity)
+        private var deviceDirection : String = pointedDirection
 
         override fun doInBackground(vararg currentLocation: Location?): PlaceModel.Place? {
             var place: PlaceModel? = PreferenceUtils.getPlaceData()
@@ -130,10 +167,13 @@ class MainActivity : AppCompatActivity() {
                     destinationLocation.longitude = (destinationPlace.latlong?.split(",")!![1]).toDouble()
 
                     var distance = currentLocation[0]?.distanceTo(destinationLocation)
-                    Log.d("TAG","Distance: "+distance)
+                    Log.d("TAG","Distance: $distance  and device pointed direction towards $deviceDirection")
                     if (distance != null && distance.compareTo(5000.0) <= 0) {
-                       compareResult = destinationPlace
-                        break
+                        var direction = positionBearing(destinationLocation,currentLocation[0]!!)
+                        if(deviceDirection.equals(direction)) {
+                            compareResult = destinationPlace
+                            break
+                        }
                     }
 
                 }
@@ -141,6 +181,33 @@ class MainActivity : AppCompatActivity() {
             return compareResult
         }
 
+        fun positionBearing(endpoint:Location,startpoint:Location):String {
+
+            var x1 = endpoint.latitude
+            var y1  = endpoint.longitude
+            var x2 = startpoint.latitude
+            var y2 = startpoint.longitude
+
+            var radians = getAtan2((y1 - y2), (x1 - x2))
+
+
+            var compassReading = radians * (180 / Math.PI)
+
+            var coordNames = arrayOf("N", "NE", "E", "SE", "S", "SW", "W", "NW", "N")
+            var coordIndex = (compassReading / 45).roundToInt()
+
+            if (coordIndex < 0) {
+                coordIndex = coordIndex + 8
+            }
+
+            var direction = coordNames[if(coordIndex<=coordNames.size) coordIndex.toInt() else -1 ]
+           Log.d("TAG","Location is towards $direction direction" )
+            return if(direction.equals(-1)) "" else direction; // returns the coordinate value
+        }
+
+        fun getAtan2(y:Double, x:Double) : Double {
+            return atan2(y, x)
+        }
 
         override fun onPostExecute(result: PlaceModel.Place?) {
             super.onPostExecute(result)
