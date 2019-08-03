@@ -35,6 +35,14 @@ class PlaceModel : Serializable{
         @Expose
         var videoUrl: String? = null
 
+        @SerializedName("place_name")
+        @Expose
+        var placeName: String? = null
+
+        @SerializedName("place_description")
+        @Expose
+        var placeDescription: String? = null
+
     }
 
 }
