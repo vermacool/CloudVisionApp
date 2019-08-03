@@ -15,15 +15,24 @@
               android:layout_width="match_parent"
               android:layout_height="wrap_content"
               android:text="@string/playInstruction"
-              android:gravity="center_horizontal"
-              android:textSize="16dp"
-              android:layout_marginBottom="4dp"/>
-
+              android:textSize="14dp"
+              android:layout_marginBottom="4dp"
+               android:paddingLeft="@dimen/fab_margin"/>
+<FrameLayout android:id="@+id/container"
+             android:layout_width="wrap_content"
+             android:layout_height="wrap_content">
     <com.flipkart.youtubeview.YouTubePlayerView
             android:id="@+id/youtube_player_view"
             android:layout_width="match_parent"
             android:layout_margin="1dp"
             android:layout_height="wrap_content"
             android:background="@drawable/ic_thumnail"/>
+    <ImageView
+               android:id="@+id/btnPlay"
+               android:layout_width="48dp"
+               android:layout_height="48dp"
+               android:src="@drawable/play_btn_thumbnail"
+               android:layout_gravity="center"/>
+</FrameLayout>
 
 </LinearLayout>

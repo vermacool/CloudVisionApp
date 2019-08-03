@@ -9,6 +9,7 @@ import android.os.Bundle
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
+import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -71,7 +72,7 @@ class MainActivity : AppCompatActivity() {
     private fun updateTextDirection(degree: Double): String {
 
         var deg: Int = degree.toInt()
-        Log.d("TAG--","degree $deg")
+
         //("N", "NE", "E", "SE", "S", "SW", "W", "NW", "N")
         var value: String
         if (deg in 0..25) {
@@ -93,7 +94,6 @@ class MainActivity : AppCompatActivity() {
         } else {
             value = "N"
         }
-        Log.d("DIRECTION", value)
         return value
     }
 
@@ -146,18 +146,16 @@ class MainActivity : AppCompatActivity() {
             var placeList = place?.places
             if (placeList != null && placeList.isNotEmpty()) {
                 for (destinationPlace in placeList) {
-                    Log.d("TAG", "" + destinationPlace.placeId)
-
                     var destinationLocation = Location("destination")
                     destinationLocation.latitude = (destinationPlace.latlong?.split(",")!![0]).toDouble()
                     destinationLocation.longitude = (destinationPlace.latlong?.split(",")!![1]).toDouble()
-
                     var distance = currentLocation[0]?.distanceTo(destinationLocation)
                     Log.d("TAG", "Distance: $distance  and device pointed direction towards $deviceDirection")
                     if (distance != null && distance.compareTo(5000.0) <= 0) {
                         var direction = positionBearing(destinationLocation, currentLocation[0]!!)
                         if (deviceDirection.equals(direction)) {
                             compareResult.add(destinationPlace)//update matched place list
+                            Log.d("TAG", "Place Added" + destinationPlace.placeName)
                         }
                     }
 
@@ -200,16 +198,20 @@ class MainActivity : AppCompatActivity() {
 
                 // the WeakReference is still valid and hasn't been reclaimed  by the GC
                 val parentActivity: MainActivity? = mParentActivity!!.get()
+                parentActivity?.performanceList?.visibility = View.VISIBLE
                 parentActivity?.performanceList?.apply {
                     layoutManager = LinearLayoutManager(parentActivity!!)
                     adapter = PerformanceAdapter(parentActivity,result){
                         val videoId: String? = it.videoUrl.toString()
-                        var bottomsheetInstance = BottomSheetFragment.getBottomSheetInstance(videoId!!)
+                        var bottomsheetInstance = BottomSheetFragment.getBottomSheetInstance(videoId!!,it.placeName!!)
                         bottomsheetInstance.show(parentActivity.supportFragmentManager, "")
                     }
                 }
 
             } else {
+                // the WeakReference is still valid and hasn't been reclaimed  by the GC
+                val parentActivity: MainActivity? = mParentActivity!!.get()
+                parentActivity?.performanceList?.visibility = View.GONE
                 Toast.makeText(mParentActivity?.get()?.applicationContext, "Couldn't match target.", Toast.LENGTH_LONG)
                     .show()
 

@@ -6,6 +6,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
+import android.widget.TextView
+import com.bumptech.glide.Glide
 import com.flipkart.youtubeview.YouTubePlayerView
 import com.flipkart.youtubeview.fragment.YouTubeBaseFragment
 import com.flipkart.youtubeview.listener.YouTubeEventListener
@@ -16,6 +18,7 @@ import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.fragment_bottom_sheet_dialog.*
 import kotlinx.android.synthetic.main.fragment_bottom_sheet_dialog.view.*
 import kotlinx.android.synthetic.main.fragment_bottom_sheet_dialog.view.tvInstruction
+import kotlinx.android.synthetic.main.performance_parent_listitem.view.*
 
 /**
  * Created by Manish Verma on 17,Jul,2019
@@ -26,10 +29,12 @@ class BottomSheetFragment : BottomSheetDialogFragment() {
 
     companion object{
         val KEY_VIDEO = "VIDEO"
-        fun getBottomSheetInstance(videoId:String):BottomSheetFragment{
+        val KEY_NAME = "NAME"
+        fun getBottomSheetInstance(videoId:String,placeName:String):BottomSheetFragment{
             var bottomsheetInstance = BottomSheetFragment()
             var bundle = Bundle()
             bundle.putString(KEY_VIDEO,videoId)
+            bundle.putString(KEY_NAME,placeName)
             bottomsheetInstance.arguments = bundle
             return bottomsheetInstance
         }
@@ -41,7 +46,8 @@ class BottomSheetFragment : BottomSheetDialogFragment() {
         view.tvExit.setOnClickListener { dismiss() }
        var videoView = view.youtube_player_view
        var videoId: String? = arguments?.getString(KEY_VIDEO)
-       videoView.setOnClickListener { tvInstruction.visibility= View.GONE }
+       var name: String? = arguments?.getString(KEY_NAME)
+       view.tvInstruction.text = "$name : Click below to play video."
        videoView.initPlayer(PreferenceUtils.YOUTUBE_KEY,videoId!!,"https://cdn.rawgit.com/flipkart-incubator/inline-youtube-view/60bae1a1/youtube-android/youtube_iframe_player.html",
             YouTubePlayerType.WEB_VIEW,object : YouTubeEventListener {
                 override fun onSeekTo(p0: Int, p1: Int) {
@@ -52,6 +58,7 @@ class BottomSheetFragment : BottomSheetDialogFragment() {
 
                 override fun onReady() {
                     Log.d("TAG","ready to play ")
+                    view.btnPlay.visibility = View.GONE
 
                 }
 
@@ -82,13 +89,15 @@ class BottomSheetFragment : BottomSheetDialogFragment() {
             },this
         ) { imageView, url, height, width ->
             Log.d("TAG",url +" : "+height+" : "+width)
-            Picasso.with(imageView.getContext())
-                .load(url)
-                .placeholder(R.drawable.ic_thumnail)
-                .error(R.drawable.ic_youtube)
-                .resize(width, height)
-                .centerCrop()
-                .into(imageView)
+           var imageViewPoster : ImageView = imageView
+           imageViewPoster.scaleType = ImageView.ScaleType.CENTER_INSIDE
+
+           Glide
+               .with(activity!!)
+               .load(url)
+               .centerCrop()
+               .placeholder(R.drawable.ic_thumnail)
+               .into(imageViewPoster)
         }
         return view
     }
